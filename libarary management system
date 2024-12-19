@@ -1,0 +1,159 @@
+Patron.java
+java
+Copy code
+package org.example;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Patron {
+    private String name;
+    private int id;
+    private List<Book> borrowedBooks;
+
+    // Constructor
+    public Patron(String name, int id) {
+        this.name = name;
+        this.id = id;
+        this.borrowedBooks = new ArrayList<>();
+    }
+
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public List<Book> getBorrowedBooks() {
+        return borrowedBooks;
+    }
+
+    // Borrow a book
+    public void borrowBook(Book book) {
+        if (book.isAvailable()) {
+            borrowedBooks.add(book);
+            book.setAvailable(false);
+            System.out.println(name + " borrowed the book: " + book.getTitle());
+        } else {
+            System.out.println("Book is not available.");
+        }
+    }
+
+    // Return a book
+    public void returnBook(Book book) {
+        if (borrowedBooks.remove(book)) {
+            book.setAvailable(true);
+            System.out.println(name + " returned the book: " + book.getTitle());
+        } else {
+            System.out.println("This book was not borrowed by " + name);
+        }
+    }
+}
+Library.java
+java
+Copy code
+package org.example;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Library {
+    private String name;
+    private List<Book> books;
+    private List<Patron> patrons;
+
+    // Constructor
+    public Library(String name) {
+        this.name = name;
+        this.books = new ArrayList<>();
+        this.patrons = new ArrayList<>();
+    }
+
+    // Add a book
+    public void addBook(Book book) {
+        books.add(book);
+        System.out.println("Book added: " + book.getTitle());
+    }
+
+    // Add a patron
+    public void addPatron(Patron patron) {
+        patrons.add(patron);
+        System.out.println("Patron added: " + patron.getName());
+    }
+
+    // Lend a book to a patron
+    public void lendBook(String isbn, int patronId) {
+        Book bookToLend = findBookByIsbn(isbn);
+        Patron patron = findPatronById(patronId);
+
+        if (bookToLend != null && patron != null) {
+            patron.borrowBook(bookToLend);
+        }
+    }
+
+    // Return a book from a patron
+    public void returnBook(String isbn, int patronId) {
+        Book bookToReturn = findBookByIsbn(isbn);
+        Patron patron = findPatronById(patronId);
+
+        if (bookToReturn != null && patron != null) {
+            patron.returnBook(bookToReturn);
+        }
+    }
+
+    // Find a book by ISBN
+    private Book findBookByIsbn(String isbn) {
+        for (Book book : books) {
+            if (book.getIsbn().equals(isbn)) {
+                return book;
+            }
+        }
+        System.out.println("Book with ISBN " + isbn + " not found.");
+        return null;
+    }
+
+    // Find a patron by ID
+    private Patron findPatronById(int id) {
+        for (Patron patron : patrons) {
+            if (patron.getId() == id) {
+                return patron;
+            }
+        }
+        System.out.println("Patron with ID " + id + " not found.");
+        return null;
+    }
+}
+App.java
+java
+Copy code
+package org.example;
+
+public class App {
+    public static void main(String[] args) {
+        // Initialize Library
+        Library library = new Library("City Library");
+
+        // Add Books
+        library.addBook(new Book("1984", "George Orwell", "12345", true));
+        library.addBook(new Book("To Kill a Mockingbird", "Harper Lee", "67890", true));
+
+        // Add Patrons
+        library.addPatron(new Patron("Alice", 1));
+        library.addPatron(new Patron("Bob", 2));
+
+        // Simulate Borrowing
+        library.lendBook("12345", 1); // Alice borrows "1984"
+        library.lendBook("12345", 2); // Bob tries to borrow "1984" (already borrowed)
+
+        // Simulate Returning
+        library.returnBook("12345", 1); // Alice returns "1984"
+        library.lendBook("12345", 2); // Bob borrows "1984"
+
+        // Invalid Cases
+        library.lendBook("99999", 1); // Non-existent book
+        library.returnBook("67890", 3); // Non-existent patron
+    }
+}
